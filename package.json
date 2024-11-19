@@ -1,22 +1,123 @@
 {
   "name": "nextjs-electron",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
+  "main": "build/main.js",
+  "author": {
+    "name": "Your Name",
+    "email": "your-email@example.com"
+  },
+  "homepage": "https://your-website.com",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "next:dev": "next dev",
+    "next:build": "next build",
+    "next:start": "next start",
+    "next:lint": "next lint",
+    "format": "dprint fmt",
+    "postinstall": "electron-builder install-app-deps",
+    "electron:dist": "electron-builder --dir",
+    "electron:dist:deb": "electron-builder --linux deb",
+    "electron:build": "tsup",
+    "build": "run-s next:build electron:build",
+    "dist": "run-s next:build electron:dist",
+    "dev": "npm-run-all --parallel electron:dev next:dev",
+    "electron:build_watch": "tsup --watch",
+    "electron:dev": "npm-run-all --parallel electron:build_watch electron:watch",
+    "electron:watch": "cross-env NODE_ENV='development' nodemon",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
+    "@electron-toolkit/utils": "^3.0.0",
+    "@reduxjs/toolkit": "^2.3.0",
+    "electron-log": "^5.2.2",
+    "electron-redux-devtools": "^0.3.4",
+    "electron-updater": "^6.3.9",
+    "get-port-please": "^3.1.2",
+    "next": "15.0.3",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
-    "next": "15.0.3"
+    "react-redux": "^9.1.2"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "eslint": "^8",
+    "eslint-config-next": "15.0.3",
+    "nodemon": "^3.1.7",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.3"
+    "tsup": "^8.3.5"
+  },
+  "build": {
+    "asar": true,
+    "executableName": "NextJSElectron",
+    "appId": "com.saybackend.nextjs-electron",
+    "productName": "NextJSElectron",
+    "asarUnpack": [
+      "node_modules/next",
+      "node_modules/@img",
+      "node_modules/sharp",
+      "**\\*.{node,dll}"
+    ],
+    "files": [
+      "build",
+      {
+        "from": ".next/standalone",
+        "to": "app",
+        "filter": [
+          "!**/.env",
+          "!**/package.json"
+        ]
+      },
+      {
+        "from": ".next/static",
+        "to": "app/.next/static"
+      },
+      {
+        "from": "public",
+        "to": "app/public"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "ia32"
+          ]
+        }
+      ],
+      "publisherName": "Your Company Name",
+      "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "AppImage"
+      ],
+      "category": "Development",
+      "artifactName": "${productName}-${version}-${arch}.${ext}",
+      "maintainer": "Your Name <your-email@example.com>"
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "http://localhost:6677"
+    }
   }
 }
