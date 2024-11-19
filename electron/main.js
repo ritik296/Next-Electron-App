@@ -1,5 +1,5 @@
 import { is } from "@electron-toolkit/utils";
-import { app, BrowserWindow, ipcMain } from "electron";
+import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import { getPort } from "get-port-please";
 import { startServer } from "next/dist/server/lib/start-server";
 import { join } from "path";
@@ -11,7 +11,6 @@ import log from "electron-log";
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = "info";
 
-
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 900,
@@ -22,8 +21,10 @@ const createWindow = () => {
     },
   });
 
-  mainWindow.on("ready-to-show", () => mainWindow.show());
-
+  mainWindow.on("ready-to-show", async () => {
+    mainWindow.show()
+  });
+  
   const loadURL = async () => {
     if (is.dev) {
       mainWindow.loadURL("http://localhost:3000");
@@ -37,14 +38,12 @@ const createWindow = () => {
       }
     }
   };
-
-  loadURL();
-
   
-  // Check for updates once the window is ready
-  mainWindow.once("ready-to-show", async () => {
-    await autoUpdater.checkForUpdatesAndNotify();
-  });
+  loadURL();
+  
+  mainWindow.on("ready", async () => {
+    autoUpdater.checkForUpdatesAndNotify();
+  })
 
   return mainWindow;
 };
@@ -77,32 +76,35 @@ const showNotification = (title, body) => {
   new Notification({ title, body }).show();
 };
 
-// autoUpdater.setFeedURL({
-//   provider: "generic",
-//   url: "http://localhost:6677",
-// });
-
 // Auto-updater event handlers
 autoUpdater.on("checking-for-update", () => {
-  mainWindow.webContents.send("update-status", "Checking for updates...");
+  showUpdateStatus("Checking for updates...");
 });
 
 autoUpdater.on("update-available", (info) => {
-  mainWindow.webContents.send("update-status", `Update available: Version ${info.version}`);
+  showUpdateStatus(`Update available: Version ${info.version}`);
 });
 
 autoUpdater.on("update-not-available", () => {
-  mainWindow.webContents.send("update-status", "No updates available.");
+  showUpdateStatus("No updates available.");
 });
 
 autoUpdater.on("update-downloaded", (info) => {
-  mainWindow.webContents.send("update-status", `Update downloaded: Version ${info.version}. Restarting to install...`);
+  showUpdateStatus(`Update downloaded: Version ${info.version}. Restarting to install...`);
 });
 
 autoUpdater.on("error", (err) => {
-  mainWindow.webContents.send("update-status", `Update error: ${err.message}`);
+  showUpdateStatus(`Update error: ${err.message}`);
 });
 
+// Function to show the update status in a dialog box
+const showUpdateStatus = (statusMessage) => {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Update Status',
+    message: statusMessage,
+  });
+};
 
 app.whenReady().then(() => {
   const mainWindow = createWindow();
