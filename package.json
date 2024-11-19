@@ -1,8 +1,9 @@
 {
   "name": "nextjs-electron",
-  "version": "0.1.5",
+  "version": "0.1.11",
   "private": true,
   "main": "build/main.js",
+  "license": "MIT", 
   "author": {
     "name": "Your Name",
     "email": "your-email@example.com"
@@ -91,7 +92,8 @@
           ]
         }
       ],
-      "publisherName": "Your Company Name",
+      "publisherName": "Nextjs Electron LearningHub",
+      "verifyUpdateCodeSignature": false,
       "artifactName": "${productName}-Setup-${version}-${arch}.${ext}"
     },
     "mac": {
@@ -116,8 +118,9 @@
       "maintainer": "Your Name <your-email@example.com>"
     },
     "publish": {
-      "provider": "generic",
-      "url": "http://localhost:6677"
+      "provider": "github",
+      "owner": "ritik296",
+      "repo": "Next-Electron-App"
     }
   }
 }
