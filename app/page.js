@@ -32,10 +32,10 @@ export default function Home() {
   
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-8 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <p>Update Status: Updated App</p>
-      <h1 className="">Home Page</h1>
-      <Link href='/about'>About us</Link>
-      <Link href='/contact'>Contact us</Link>
+      {/* <p>Update Status</p> */}
+      <h1 className="">Home</h1>
+      <Link href='/about'>About</Link>
+      <Link href='/contact'>Contact</Link>
       <button className="bg-teal-600 py-2 px-4 text-white rounded-md" onClick={() => electron.ipcRenderer.send("ping", "Hello")}>Ping</button>
       <div style={{ textAlign: 'center', padding: '20px' }}>
         <h1>Counter: {count}</h1>
