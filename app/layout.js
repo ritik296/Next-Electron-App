@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./globals.css";
 import { ReduxProvider } from "./Provider/reduxProvider";
+import UpdateNotificationBar from "./components/updateNotificationBar";
 
 
 const geistSans = localFont({
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <UpdateNotificationBar/>
         <ReduxProvider>
           {children}
         </ReduxProvider>

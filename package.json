@@ -1,6 +1,6 @@
 {
   "name": "nextjs-electron",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "private": true,
   "main": "build/main.js",
   "license": "MIT", 
@@ -113,9 +113,7 @@
         "deb",
         "AppImage"
       ],
-      "category": "Development",
-      "artifactName": "${productName}-${version}-${arch}.${ext}",
-      "maintainer": "Your Name <your-email@example.com>"
+      "category": "Development"
     },
     "publish": {
       "provider": "github",

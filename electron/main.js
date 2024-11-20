@@ -1,11 +1,16 @@
 import { is } from "@electron-toolkit/utils";
-import { app, BrowserWindow, ipcMain, dialog, Notification } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, Notification, Menu, Tray, nativeImage } from "electron";
 import { getPort } from "get-port-please";
 import { startServer } from "next/dist/server/lib/start-server";
 import { join } from "path";
 import { store } from "../store";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
+
+let deferUpdates = false; // Track if the user clicked "Later"
+const UPDATE_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
+let tray = null; // Tray object
+let mainWindow = null; // Reference to the main window
 
 // Configure autoUpdater logging
 autoUpdater.logger = log;
@@ -20,18 +25,25 @@ autoUpdater.setFeedURL({
 
 // Function to create the main window
 const createWindow = () => {
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     webPreferences: {
       preload: join(__dirname, "preload.js"),
       nodeIntegration: true,
     },
+    show: false, // Start hidden; open only via tray menu
   });
 
   // Show the main window when it's ready
   mainWindow.on("ready-to-show", () => {
     mainWindow.show();
+  });
+
+  mainWindow.on("close", (event) => {
+    // Hide the window instead of closing it
+    event.preventDefault();
+    mainWindow.hide();
   });
 
   // Load the app (either Next.js server or local build)
@@ -54,6 +66,7 @@ const createWindow = () => {
   // Check for updates when the app is ready
   mainWindow.once("ready-to-show", () => {
     autoUpdater.checkForUpdatesAndNotify();
+    startPeriodicUpdateChecks(); // Start the periodic update check
   });
 
   return mainWindow;
@@ -88,6 +101,18 @@ const showNotification = (title, body) => {
   new Notification({ title, body }).show();
 };
 
+// Function to check for updates periodically
+const startPeriodicUpdateChecks = () => {
+  setInterval(() => {
+    if (!deferUpdates) {
+      log.info("Periodic update check triggered.");
+      autoUpdater.checkForUpdatesAndNotify();
+    } else {
+      log.info("Update checks deferred by the user.");
+    }
+  }, UPDATE_INTERVAL);
+};
+
 // Auto-updater event handlers
 autoUpdater.on("checking-for-update", () => {
   showUpdateStatus("Checking for updates...");
@@ -113,7 +138,11 @@ autoUpdater.on("update-downloaded", () => {
     buttons: ["Restart", "Later"],
   });
 
-  if (response === 0) autoUpdater.quitAndInstall(false, true);
+  if (response === 0) {
+    autoUpdater.quitAndInstall(false, true);
+  } else {
+    deferUpdates = true; // User clicked "Later"
+  }
 });
 
 autoUpdater.on("error", (err) => {
@@ -129,9 +158,52 @@ const showUpdateStatus = (statusMessage) => {
   });
 };
 
+// Create the tray with menu options
+const createTray = (isUpdateAvailable=false) => {
+  const iconPath = join(__dirname, "../public/logo1.png"); // Replace with your tray icon path
+  const trayIcon = nativeImage.createFromPath(iconPath);
+  tray = new Tray(trayIcon);
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Open",
+      click: () => {
+        if (mainWindow) mainWindow.show();
+      },
+    },
+    isUpdateAvailable
+    ? {
+        label: "Update App",
+        click: () => {
+          autoUpdater.quitAndInstall(false, true);
+        },
+      }
+    : {
+        label: "Check for Updates",
+        click: () => {
+          if (!deferUpdates) autoUpdater.checkForUpdatesAndNotify();
+        },
+      },
+    {
+      label: "Close",
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setToolTip("Next Electron App");
+  tray.setContextMenu(contextMenu);
+
+  tray.on("click", () => {
+    if (mainWindow) mainWindow.show();
+  });
+};
+
 // Electron app lifecycle hooks
 app.whenReady().then(() => {
-  const mainWindow = createWindow();
+  mainWindow = createWindow();
+  createTray(false); // Create the tray icon and menu
 
   // IPC handlers
   ipcMain.on("ping", (event, data) => {
@@ -156,4 +228,22 @@ app.on("window-all-closed", () => {
 
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+// Send the current app version
+ipcMain.on("get-version", (event) => {
+  event.sender.send("app-version", app.getVersion());
+});
+
+// Notify renderer when an update is available
+autoUpdater.on("update-available", () => {
+  createTray(true)
+  if (BrowserWindow.getAllWindows().length) {
+    BrowserWindow.getAllWindows()[0].webContents.send("update-available");
+  }
+});
+
+// Handle update installation
+ipcMain.on("apply-update", () => {
+  autoUpdater.quitAndInstall(false, true);
 });
