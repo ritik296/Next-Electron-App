@@ -7,20 +7,23 @@ import { store } from "../store";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
 import storage from 'electron-json-storage';
-// import AutoLaunch from 'auto-launch';
+import AutoLaunch from 'auto-launch';
 
-// const appLauncher = new AutoLaunch({
-//   name: 'NextJSElectron', 
-//   path: process.execPath, 
-// });
+const appLauncher = new AutoLaunch({
+  name: 'NextJSElectron', 
+  path: process.execPath, 
+});
 
-// appLauncher.isEnabled().then(function(isEnabled) {
-//   console.log("Current ",isEnabled)
-//   if (isEnabled) return;
-//   appLauncher.enable();
-// }).catch(function (err) {
-//   throw err;
-// });
+if(!storage.getSync('openAtLogin')) {
+  appLauncher.isEnabled().then(function(isEnabled) {
+    console.log("Current ",isEnabled)
+    if (isEnabled) return;
+    appLauncher.enable();
+  }).catch(function (err) {
+    throw err;
+  });
+  storage.set('openAtLogin', true);
+}
 
 
 let deferUpdates = false; // Track if the user clicked "Later"
@@ -32,12 +35,12 @@ let mainWindow = null; // Reference to the main window
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = "info";
 
-if(!storage.getSync('openAtLogin')) {
-  app.setLoginItemSettings({
-    openAtLogin: true,
-  });
-  storage.set('openAtLogin', true);
-}
+// if(!storage.getSync('openAtLogin')) {
+//   app.setLoginItemSettings({
+//     openAtLogin: true,
+//   });
+//   storage.set('openAtLogin', true);
+// }
 
 // Set the feed URL for GitHub releases
 autoUpdater.setFeedURL({
@@ -224,29 +227,29 @@ ipcMain.on("get-version", (event) => {
 });
 
 ipcMain.on("auto-launch-check", async (event) => {
-  // const isEnabled = await appLauncher.isEnabled();
-  // console.log("Auto-launch status:", isEnabled);
-  const setting = app.getLoginItemSettings();
-  event.sender.send("auto-launch-status", { success: true, enabled: setting?.launchItems[0]?.enabled });
+  const isEnabled = await appLauncher.isEnabled();
+  console.log("Auto-launch status:", isEnabled);
+  // const status = app.getLoginItemSettings()?.launchItems[0]?.enabled;
+  event.sender.send("auto-launch-status", { success: true, enabled: isEnabled });
 })
 
 ipcMain.on("auto-launch-enable", async (event) => {
-  // await appLauncher.enable();
-  // console.log("Auto-lunch enabled")
-  app.setLoginItemSettings({
-    openAtLogin: true,
-    enabled: true,
-  });
+  await appLauncher.enable();
+  console.log("Auto-lunch enabled")
+  // app.setLoginItemSettings({
+  //   openAtLogin: true,
+  //   enabled: true,
+  // });
   event.sender.send("auto-launch-status", { success: true, enabled: true });
 })
 
 ipcMain.on("auto-launch-disable", async (event) => {
-  // await appLauncher.disable();
-  // console.log("Auto-launch disabled.");
-  app.setLoginItemSettings({
-    openAtLogin: true,
-    enabled: false,
-  });
+  await appLauncher.disable();
+  console.log("Auto-launch disabled.");
+  // app.setLoginItemSettings({
+  //   openAtLogin: true,
+  //   enabled: false,
+  // });
   event.sender.send("auto-launch-status", { success: true, enabled: false });
 })
 
