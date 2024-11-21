@@ -17,6 +17,10 @@ let mainWindow = null; // Reference to the main window
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = "info";
 
+app.setLoginItemSettings({
+  openAtLogin: true,
+});
+
 // Set the feed URL for GitHub releases
 autoUpdater.setFeedURL({
   provider: "github",

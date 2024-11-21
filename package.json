@@ -89,7 +89,6 @@
     ],
     "win": {
       "icon": "icons/icon.ico",
-      "startup": true,
       "target": [
         {
           "target": "nsis",
@@ -105,9 +104,6 @@
     },
     "mac": {
       "icon": "icons/icon.icns",
-      "loginItem": {
-        "enabled": true
-      },
       "target": [
         {
           "target": "dmg",
@@ -121,10 +117,6 @@
     },
     "linux": {
       "icon": "icons/icon.png",
-      "desktop": {
-        "Exec": "nextjs-electron",
-        "X-GNOME-Autostart-enabled": "true"
-      },
       "target": [
         "deb",
         "AppImage"
