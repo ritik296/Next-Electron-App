@@ -5,12 +5,13 @@ const appLauncher = new AutoLaunch({
   path: process.execPath, 
 });
 
-appLauncher.isEnabled().then(function(isEnabled) {
-  if (isEnabled) return;
-  appLauncher.enable();
-}).catch(function (err) {
-  throw err;
-});
+// appLauncher.isEnabled().then(function(isEnabled) {
+//   console.log("Current ",isEnabled)
+//   if (isEnabled) return;
+//   appLauncher.enable();
+// }).catch(function (err) {
+//   throw err;
+// });
 
 export const enableAutoLaunch = async () => {
   try {

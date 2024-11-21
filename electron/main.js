@@ -6,7 +6,22 @@ import { join } from "path";
 import { store } from "../store";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
-import { enableAutoLaunch, disableAutoLaunch, isAutoLaunchEnabled } from "./autoLaunchManager";
+import storage from 'electron-json-storage';
+// import AutoLaunch from 'auto-launch';
+
+// const appLauncher = new AutoLaunch({
+//   name: 'NextJSElectron', 
+//   path: process.execPath, 
+// });
+
+// appLauncher.isEnabled().then(function(isEnabled) {
+//   console.log("Current ",isEnabled)
+//   if (isEnabled) return;
+//   appLauncher.enable();
+// }).catch(function (err) {
+//   throw err;
+// });
+
 
 let deferUpdates = false; // Track if the user clicked "Later"
 const UPDATE_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
@@ -17,9 +32,12 @@ let mainWindow = null; // Reference to the main window
 autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = "info";
 
-app.setLoginItemSettings({
-  openAtLogin: true,
-});
+if(!storage.getSync('openAtLogin')) {
+  app.setLoginItemSettings({
+    openAtLogin: true,
+  });
+  storage.set('openAtLogin', true);
+}
 
 // Set the feed URL for GitHub releases
 autoUpdater.setFeedURL({
@@ -206,15 +224,30 @@ ipcMain.on("get-version", (event) => {
 });
 
 ipcMain.on("auto-launch-check", async (event) => {
-  event.sender.send("auto-launch-status", await isAutoLaunchEnabled());
+  // const isEnabled = await appLauncher.isEnabled();
+  // console.log("Auto-launch status:", isEnabled);
+  const setting = app.getLoginItemSettings();
+  event.sender.send("auto-launch-status", { success: true, enabled: setting?.launchItems[0]?.enabled });
 })
 
 ipcMain.on("auto-launch-enable", async (event) => {
-  event.sender.send("auto-launch-status", await enableAutoLaunch());
+  // await appLauncher.enable();
+  // console.log("Auto-lunch enabled")
+  app.setLoginItemSettings({
+    openAtLogin: true,
+    enabled: true,
+  });
+  event.sender.send("auto-launch-status", { success: true, enabled: true });
 })
 
 ipcMain.on("auto-launch-disable", async (event) => {
-  event.sender.send("auto-launch-status", await disableAutoLaunch());
+  // await appLauncher.disable();
+  // console.log("Auto-launch disabled.");
+  app.setLoginItemSettings({
+    openAtLogin: true,
+    enabled: false,
+  });
+  event.sender.send("auto-launch-status", { success: true, enabled: false });
 })
 
 // Handle update installation
