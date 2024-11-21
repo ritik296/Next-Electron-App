@@ -6,6 +6,7 @@ import { join } from "path";
 import { store } from "../store";
 import { autoUpdater } from "electron-updater";
 import log from "electron-log";
+import { enableAutoLaunch, disableAutoLaunch, isAutoLaunchEnabled } from "./autoLaunchManager";
 
 let deferUpdates = false; // Track if the user clicked "Later"
 const UPDATE_INTERVAL = 60 * 60 * 1000; // 1 hour in milliseconds
@@ -199,6 +200,18 @@ app.on("activate", () => {
 ipcMain.on("get-version", (event) => {
   event.sender.send("app-version", app.getVersion());
 });
+
+ipcMain.on("auto-launch-check", async (event) => {
+  event.sender.send("auto-launch-status", await isAutoLaunchEnabled());
+})
+
+ipcMain.on("auto-launch-enable", async (event) => {
+  event.sender.send("auto-launch-status", await enableAutoLaunch());
+})
+
+ipcMain.on("auto-launch-disable", async (event) => {
+  event.sender.send("auto-launch-status", await disableAutoLaunch());
+})
 
 // Handle update installation
 ipcMain.on("apply-update", () => {

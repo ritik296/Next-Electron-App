@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { increment, decrement } from '@/store';
+import AutoLaunchToggle from "@/app/components/autoLaunchToggle";
 
 export default function Home() {
   const count = useSelector((state) => state.counter.value);
@@ -36,6 +37,7 @@ export default function Home() {
       <h1 className="">Home</h1>
       <Link href='/about'>About</Link>
       <Link href='/contact'>Contact</Link>
+      <AutoLaunchToggle/>
       <button className="bg-teal-600 py-2 px-4 text-white rounded-md" onClick={() => electron.ipcRenderer.send("ping", "Hello")}>Ping</button>
       <div style={{ textAlign: 'center', padding: '20px' }}>
         <h1>Counter: {count}</h1>

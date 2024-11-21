@@ -23,6 +23,13 @@ contextBridge.exposeInMainWorld('counter', {
   },
 });
 
+contextBridge.exposeInMainWorld('autoLaunch', {
+  enable: () => ipcRenderer.send("auto-launch-enable"),
+  disable: () => ipcRenderer.send("auto-launch-disable"),
+  checkStatus: () => ipcRenderer.send("auto-launch-check"),
+  onStatusChange: (listener) => ipcRenderer.on("auto-launch-status", (event, data) => listener(data)),
+})
+
 // // Auto-updater events
 // contextBridge.exposeInMainWorld("updater", {
 //   onStatusChange: (callback) => {

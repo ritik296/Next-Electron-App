@@ -1,9 +1,9 @@
 {
   "name": "nextjs-electron",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "private": true,
   "main": "build/main.js",
-  "license": "MIT", 
+  "license": "MIT",
   "author": {
     "name": "Your Name",
     "email": "your-email@example.com"
@@ -34,6 +34,7 @@
   "dependencies": {
     "@electron-toolkit/utils": "^3.0.0",
     "@reduxjs/toolkit": "^2.3.0",
+    "auto-launch": "^5.0.6",
     "electron-log": "^5.2.2",
     "electron-redux-devtools": "^0.3.4",
     "electron-updater": "^6.3.9",
@@ -88,6 +89,7 @@
     ],
     "win": {
       "icon": "icons/icon.ico",
+      "startup": true,
       "target": [
         {
           "target": "nsis",
@@ -103,6 +105,9 @@
     },
     "mac": {
       "icon": "icons/icon.icns",
+      "loginItem": {
+        "enabled": true
+      },
       "target": [
         {
           "target": "dmg",
@@ -116,6 +121,10 @@
     },
     "linux": {
       "icon": "icons/icon.png",
+      "desktop": {
+        "Exec": "nextjs-electron",
+        "X-GNOME-Autostart-enabled": "true"
+      },
       "target": [
         "deb",
         "AppImage"
