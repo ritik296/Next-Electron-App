@@ -113,42 +113,6 @@ const startPeriodicUpdateChecks = () => {
   }, UPDATE_INTERVAL);
 };
 
-// Auto-updater event handlers
-autoUpdater.on("checking-for-update", () => {
-  showUpdateStatus("Checking for updates...");
-});
-
-autoUpdater.on("update-available", () => {
-  dialog.showMessageBox({
-    type: "info",
-    title: "Update Available",
-    message: "A new update is available. Downloading now...",
-  });
-});
-
-autoUpdater.on("update-not-available", () => {
-  showUpdateStatus("No updates available.");
-});
-
-autoUpdater.on("update-downloaded", () => {
-  const response = dialog.showMessageBoxSync({
-    type: "info",
-    title: "Update Ready",
-    message: "Update downloaded. Restart the app to apply the update?",
-    buttons: ["Restart", "Later"],
-  });
-
-  if (response === 0) {
-    autoUpdater.quitAndInstall(false, true);
-  } else {
-    deferUpdates = true; // User clicked "Later"
-  }
-});
-
-autoUpdater.on("error", (err) => {
-  showUpdateStatus(`Update error: ${err.message}`);
-});
-
 // Function to show the update status in a dialog box
 const showUpdateStatus = (statusMessage) => {
   dialog.showMessageBox({
@@ -160,7 +124,8 @@ const showUpdateStatus = (statusMessage) => {
 
 // Create the tray with menu options
 const createTray = (isUpdateAvailable=false) => {
-  const iconPath = join(__dirname, "../public/logo1.png"); // Replace with your tray icon path
+  const iconPath = join(__dirname, "../icons/icon.png"); // Replace with your tray icon path
+  console.log(iconPath)
   const trayIcon = nativeImage.createFromPath(iconPath);
   tray = new Tray(trayIcon);
 
@@ -235,15 +200,57 @@ ipcMain.on("get-version", (event) => {
   event.sender.send("app-version", app.getVersion());
 });
 
-// Notify renderer when an update is available
+// Handle update installation
+ipcMain.on("apply-update", () => {
+  autoUpdater.quitAndInstall(false, true);
+});
+
+
+// Auto-updater event handlers
+autoUpdater.on("checking-for-update", () => {
+  showUpdateStatus("Checking for updates...");
+});
+
 autoUpdater.on("update-available", () => {
+  dialog.showMessageBox({
+    type: "info",
+    title: "Update Available",
+    message: "A new update is available. Downloading now...",
+  });
+});
+
+// Notify renderer when an update is available
+// autoUpdater.on("update-available", () => {
+//   createTray(true)
+//   if (BrowserWindow.getAllWindows().length) {
+//     BrowserWindow.getAllWindows()[0].webContents.send("update-available");
+//   }
+// });
+
+autoUpdater.on("update-not-available", () => {
+  showUpdateStatus("No updates available.");
+});
+
+autoUpdater.on("update-downloaded", () => {
+  const response = dialog.showMessageBoxSync({
+    type: "info",
+    title: "Update Ready",
+    message: "Update downloaded. Restart the app to apply the update?",
+    buttons: ["Restart", "Later"],
+  });
+
   createTray(true)
   if (BrowserWindow.getAllWindows().length) {
     BrowserWindow.getAllWindows()[0].webContents.send("update-available");
   }
+
+  if (response === 0) {
+    autoUpdater.quitAndInstall(false, true);
+  } else {
+    deferUpdates = true; // User clicked "Later"
+  }
 });
 
-// Handle update installation
-ipcMain.on("apply-update", () => {
-  autoUpdater.quitAndInstall(false, true);
+autoUpdater.on("error", (err) => {
+  showUpdateStatus(`Update error: ${err.message}`);
 });
