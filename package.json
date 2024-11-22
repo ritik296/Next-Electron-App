@@ -29,7 +29,8 @@
     "lint": "next lint",
     "build:mac": "npm run build && electron-builder --mac -c.mac.identity=null -p always",
     "build:linux": "npm run build && electron-builder --linux -p always",
-    "build:win": "npm run build && electron-builder --win -p always"
+    "build:win": "npm run build && electron-builder --win -p always",
+    "build:all": "npm run build && electron-builder --mac -c.mac.identity=null --linux --win -p always"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^3.0.0",
