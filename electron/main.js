@@ -8,6 +8,7 @@ import { autoUpdater } from "electron-updater";
 import log from "electron-log";
 import storage from 'electron-json-storage';
 import AutoLaunch from 'auto-launch';
+import { Todo, sequelize } from "./database";
 
 const appLauncher = new AutoLaunch({
   name: 'NextJSElectron', 
@@ -307,3 +308,47 @@ autoUpdater.on("update-downloaded", () => {
 autoUpdater.on("error", (err) => {
   showUpdateStatus(`Update error: ${err.message}`);
 });
+
+
+// TODO IPC
+ipcMain.handle('create-todo', async (event, todoItem) => {
+  try {
+    const todo = await Todo.create(todoItem);
+    return todo.toJSON();
+  } catch (error) {
+    console.log("Error creating todo: ", error);
+    throw error;
+  }
+})
+
+ipcMain.handle('get-todo', async (event) => {
+  try {
+    const todos = await Todo.findAll({ raw: true });
+    return todos;
+  } catch (error) {
+    console.log("Error retriving todos: ", error);
+    throw error;
+  }
+})
+
+ipcMain.handle('update-todo', async (event, id, updatedTodo) => {
+  try {
+    const todo = await Todo.findOne({ where: { id } });
+    todo.status = updatedTodo.status
+    await todo.save()
+    return todo.toJSON();
+  } catch (error) {
+    console.log("Error updating todo: ", error);
+    throw error;
+  }
+})
+
+ipcMain.handle('delete-todo', async (event, id) => {
+  try {
+    const todo = await Todo.destroy({ where: { id } });
+    return todo;
+  } catch (error) {
+    console.log("Error deleting todo: ", error);
+    throw error;
+  }
+})

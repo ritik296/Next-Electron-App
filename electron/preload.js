@@ -30,6 +30,13 @@ contextBridge.exposeInMainWorld('autoLaunch', {
   onStatusChange: (listener) => ipcRenderer.on("auto-launch-status", (event, data) => listener(data)),
 })
 
+contextBridge.exposeInMainWorld('todo', {
+  create: (todoItem) => ipcRenderer.invoke('create-todo', todoItem),
+  get: () => ipcRenderer.invoke('get-todo'),
+  update: (id, updatedTodo) => ipcRenderer.invoke('update-todo', id, updatedTodo),
+  delete: (id) => ipcRenderer.invoke('delete-todo', id)
+})
+
 // // Auto-updater events
 // contextBridge.exposeInMainWorld("updater", {
 //   onStatusChange: (callback) => {

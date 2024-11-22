@@ -37,6 +37,7 @@ export default function Home() {
       <h1 className="">Home</h1>
       <Link href='/about'>About</Link>
       <Link href='/contact'>Contact</Link>
+      <Link href='/todoApp'>Todo Application</Link>
       <AutoLaunchToggle/>
       <button className="bg-teal-600 py-2 px-4 text-white rounded-md" onClick={() => electron.ipcRenderer.send("ping", "Hello")}>Ping</button>
       <div style={{ textAlign: 'center', padding: '20px' }}>
